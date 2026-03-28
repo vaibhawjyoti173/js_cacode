@@ -115,3 +115,25 @@ console.log(typeof { name: "Alice", age: 30 }); // Output: "object"
 console.log(typeof function() {}); // Output: "function" (functions are a special type of object in JavaScript)
 
 // link: https://262.ecma-international.org/5.1/#sec-11.4.3
+
+
+
+
+// there are two types of memory management in JavaScript: stack and heap. 
+// Primitive data types are stored in the stack, while non-primitive data types (objects, arrays, functions) are stored in the heap. The stack is a region of memory that is used for storing primitive values and function call frames, while the heap is a region of memory that is used for storing objects and other complex data structures. When you create a variable that holds a primitive value, it is stored directly in the stack. When you create a variable that holds a non-primitive value, it is stored in the heap, and the variable holds a reference to the location of that value in memory. This is why non-primitive data types are passed by reference type, while primitive data types are passed by value type.
+
+// lets understand this with an example:
+let num = 42; // num is a primitive value stored in the stack
+let obj = { name: "Alice", age: 30 }; // obj is a non-primitive value stored in the heap, and the variable obj holds a reference to the location of that object in memory
+
+// when we assign num to another variable, it creates a copy of the value in the stack:
+let num2 = num; // num2 is a copy of the value of num, and it is also stored in the stack
+num2 = 43; // modifying num2 does not affect num because they are stored separately in the stack
+console.log(num); // Output: 42 (num remains unchanged)
+console.log(num2); // Output: 43 (num2 is modified)
+
+// when we assign obj to another variable, it creates a reference to the same object in the heap:
+let obj2 = obj; // obj2 is a reference to the same object as obj, and it is stored in the heap
+obj2.age = 31; // modifying obj2 modifies the original object that both obj and obj2 reference
+console.log(obj); // Output: { name: "Alice", age: 31 } (obj is modified because it references the same object as obj2)
+console.log(obj2); // Output: { name: "Alice", age: 31 } (obj2 is modified as well)
