@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM Chai aur code</title>
+</head>
+<body style="background-color: grey; color:purple;">
+    <div class="parent">
+    <!--this newline + spaces = text node-->
+    <div class="day">monday</div>
+    <!--this newline + spaces = text node-->
+    <div class="day">tuesday</div>
+    <!--this newline + spaces = text node-->
+    <div class="day">wednesday</div>
+    <!--this newline + spaces = text node-->
+    <div class="day">thursday</div>
+    <!--this newline + spaces = text node-->
+</div>
+</body>
+<script>
+    const parent = document.querySelector('.parent')
+    console.log(parent);
+    console.log(parent.children);
+    console.log(parent.children[1]);
+    //console.log(parent.children[1].innerHTML); // output: tuesday
+    for (let i = 0; i < parent.children.length; i++) {
+       // console.log(parent.children[i].innerHTML);
+    }
+    //monday tuesday wednesday thursday
+    parent.children[1].style.color ="orange"
+   // console.log(parent.firstElementChild);  // monday
+   // console.log(parent.lastElementChild)   // thursday
+    const day1 = document.querySelector('.day');
+    console.log(day1);
+    console.log(day1.parentElement); // <div class="parent">…</div>
+    console.log(day1.nextElementSibling); // <div class="day" style="color: orange;">tuesday</div>
+
+    console.log("NODES: ", parent.childNodes); //NODES:  NodeList(9) [text, div.day, text, div.day, text, div.day, text, div.day, text]0: text1: div.day2: text3: div.day4: text5: div.day6: text7: div.day8: textlength: 9[[Prototype]]: NodeList
+</script>
+</html>

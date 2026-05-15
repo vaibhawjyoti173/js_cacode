@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>chai aur code | DOM</title>
+</head>
+<body style = "background-color: black; color: purple; ">
+    <ul class ="language">
+        <li>
+            Javascript
+        </li>
+    </ul>
+</body>
+<script>
+    // METHOD 1 — basic way to add li using innerHTML
+    // not optimised — innerHTML triggers HTML parsing every time
+    function addLanguage(langName){
+        const li =document.createElement('li');
+        li.innerHTML=`${langName}`; // works but slower than createTextNode
+        //li.style.color ="blue";
+        //li.style.backgroundColor="grey"
+        //li.style.padding="5px"
+        document.querySelector('.language').appendChild(li);
+    }
+    addLanguage("python");  // list: Javascript, python
+    addLanguage("ruby");    // list: Javascript, python, ruby
+
+    // METHOD 2 — optimised way using createTextNode
+    // better than innerHTML — no HTML parsing, pure text node creation
+    // also avoids XSS risk as createTextNode never parses HTML tags
+    // also avoids full tree traversal issue of METHOD 1 by directly
+    // appending to the existing reference
+    function optiaddLang(langname){
+        const li = document.createElement('li')
+        li.appendChild(document.createTextNode(langname)) // no HTML parsing
+        document.querySelector('.language').appendChild(li)
+    }
+    optiaddLang("golang") // list: Javascript, python, ruby, golang
+
+    // EDIT — replace an element using replaceWith()
+    // replaceWith() replaces the selected element with a new element entirely
+    // here we are replacing python (2nd li) with mojo
+    const secondLang = document.querySelector("li:nth-child(2)");
+    //secondLang.innerHTML= "mojo";
+    //console.log(secondLang) // return initial lang which is python
+    const newli = document.createElement('li');
+    newli.textContent ="mojo";
+    secondLang.replaceWith(newli); // list: Javascript, mojo, ruby, golang
+
+    // EDIT — replace using outerHTML
+    // outerHTML replaces the entire element including its own tags
+    // unlike innerHTML which only replaces content inside the element
+    // NOTE: after this line, firstlang variable still points to old element
+    // in memory even though DOM is updated — dont use firstlang after this
+    const firstlang = document.querySelector("li:first-child")
+    firstlang.outerHTML ='<li>typescript</li>' // list: typescript, mojo, ruby, golang
+
+    // REMOVE — remove last element using remove()
+    // remove() removes the element from DOM completely
+    const lastlang = document.querySelector('li:last-child');
+    lastlang.remove() // list: typescript, mojo, ruby (golang removed)
+
+    // FINAL LIST STATE:
+    // <li>typescript</li>  ← was Javascript, replaced by outerHTML
+    // <li>mojo</li>        ← was python, replaced by replaceWith()
+    // <li>ruby</li>        ← added by addLanguage()
+    // golang was added by optiaddLang() but removed by lastlang.remove()
+</script>
+</html>
