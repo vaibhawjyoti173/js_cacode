@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dom learning</title>
+    <style>
+        .bg-green{
+            background-color: lightgreen;
+            color: crimson;
+        }
+    </style>
+</head>
+<body class="bg-green">
+    <div > 
+        <h1 id ="title" class="heading">
+            DOM learning on Chai aur code
+            <span style = "display: none;">
+                test text
+            </span>
+        </h1>
+        <h2>Lorem ipsum dolor sit.</h2>
+        <h2>Lorem, ipsum dolor.</h2>
+        <h2>Lorem ipsum dolor sit amet consectetur.</h2>
+        <p>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Hic, eveniet? 
+        </p>
+        <input type ="password" name="" id="">
+        <ul>
+            <li class ="list-item">one</li>
+            <li class ="list-item">two</li>
+            <li class ="list-item">three</li>
+            <li class ="list-item">four</li>
+        </ul>
+    </div>
+</body>
+</html>
+<!-- we can use following dom methods in js in brower's console when we open this with live server
+ // by id
+const title = document.getElementById("title");
+const title2 = document.querySelector("#title");
+
+// by class
+const listItems = document.querySelectorAll(".list-item");
+const heading = document.querySelector(".heading");
+
+// by tag
+const allH2 = document.querySelectorAll("h2");
+const para = document.querySelector("p");
+
+// by attribute
+const passwordInput = document.querySelector("input[type='password']");
+
+// body
+const body = document.querySelector("body");
+const body2 = document.body;
+
+
+const title = document.querySelector("#title");
+
+console.log(title.textContent);
+// "DOM learning on Chai aur code  test text"
+// textContent gives ALL text including hidden span
+
+console.log(title.innerText);
+// "DOM learning on Chai aur code"
+// innerText respects display:none — hidden span not included
+
+console.log(title.innerHTML);
+// gives full HTML inside including span tag
+
+
+// change text
+title.textContent = "New Title";
+title.innerText = "New Title";
+
+// change HTML inside
+title.innerHTML = "New Title <span>with span</span>";
+
+// change input value
+const input = document.querySelector("input[type='password']");
+input.value = "mypassword";
+input.type = "text"; // change password to text type
+
+
+const title = document.querySelector("#title");
+
+// single style
+title.style.color = "blue";
+title.style.fontSize = "48px";
+title.style.backgroundColor = "yellow";
+title.style.padding = "10px";
+title.style.borderRadius = "8px";
+
+// multiple styles at once using setProperty
+title.style.setProperty("color", "red", "important");
+
+// body background
+document.body.style.backgroundColor = "black";
+document.body.style.color = "white";
+
+
+const title = document.querySelector("#title");
+const body = document.body;
+
+// add class
+title.classList.add("newClass");
+
+// remove class
+body.classList.remove("bg-green");     // removes green background from body
+
+// toggle — add if not there, remove if there
+body.classList.toggle("bg-green");
+
+// check
+console.log(body.classList.contains("bg-green")); // true
+
+// replace
+title.classList.replace("heading", "newHeading");
+
+// see all classes
+console.log(title.classList); // DOMTokenList ["heading"]
+
+
+const title = document.querySelector("#title");
+const input = document.querySelector("input");
+
+// read
+console.log(title.id);                    // "title"
+console.log(title.className);             // "heading"
+console.log(input.getAttribute("type"));  // "password"
+
+// set
+title.setAttribute("class", "newClass");
+input.setAttribute("type", "text");       // show password
+input.setAttribute("placeholder", "Enter password");
+
+// remove
+title.removeAttribute("id");
+
+// check
+console.log(input.hasAttribute("type")); // true
+
+
+const div = document.querySelector("div");
+
+// children of div
+console.log(div.children);
+// HTMLCollection [h1, h2, h2, h2, p, input, ul]
+
+console.log(div.firstElementChild);  // h1
+console.log(div.lastElementChild);   // ul
+console.log(div.childElementCount);  // 7
+
+// parent
+const ul = document.querySelector("ul");
+console.log(ul.parentElement);       // div
+
+// siblings
+const para = document.querySelector("p");
+console.log(para.nextElementSibling);     // input
+console.log(para.previousElementSibling); // h2 (last one)
+
+// li items
+const firstLi = document.querySelector(".list-item");
+console.log(firstLi.nextElementSibling);  // second li
+
+
+// create new li and add to ul
+const ul = document.querySelector("ul");
+const newLi = document.createElement("li");
+newLi.textContent = "five";
+newLi.classList.add("list-item");
+ul.appendChild(newLi);
+// ul now has 5 items
+
+// create new h2 and add to div
+const div = document.querySelector("div");
+const newH2 = document.createElement("h2");
+newH2.textContent = "New H2 added by JS";
+newH2.style.color = "blue";
+div.appendChild(newH2);
+
+// add at beginning
+const newPara = document.createElement("p");
+newPara.textContent = "First paragraph added by JS";
+div.prepend(newPara);
+
+
+// remove hidden span from h1
+const span = document.querySelector("span");
+span.remove();
+
+// remove first li
+const firstLi = document.querySelector(".list-item");
+firstLi.remove();
+
+// remove all li items
+document.querySelectorAll(".list-item").forEach(li => li.remove());
+-->
