@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body style ="background-color: #414141; color: aliceblue;">
+    <h2>Amazing image</h2>
+    <span>
+        <ul id = "images">
+            <li><img width="100px" id="pic_01" src="https://picsum.photos/200" alt="scenary"></li>
+            <br>
+            <li><img width="100px" id="pic_02" src="https://picsum.photos/205" alt="scenary"></li>
+            <br>
+            <!-- onclick directly on element is NOT recommended — hard to maintain at scale -->
+            <!-- better approach: use addEventListener in JS (see below) -->
+            <li><img width="100px" id="pic_03" src="https://picsum.photos/204" alt="scenary"></li>
+            <br>
+            <li><img width="100px" id="pic_04" src="https://picsum.photos/207" alt="scenary"></li>
+            <br>
+            <li><a style="color: blue;" href="https://google.com" id="google" target="_blank">Google</a></li>
+        </ul>
+    </span>
+</body>
+<script>
+
+    // ============================================================
+    // THREE WAYS TO HANDLE EVENTS — ordered from worst to best
+    // ============================================================
+
+    // WAY 1 — inline onclick on HTML element (WORST — avoid at scale)
+    // <img onclick="alert('scenary')">
+    // problem: mixes HTML and JS, hard to maintain, cant add multiple handlers
+
+    // WAY 2 — onclick property on DOM element (OK but limited)
+    // document.getElementById('pic_03').onclick = () => { alert('scenary') };
+    // problem: can only assign ONE handler — second assignment overwrites first
+    // document.getElementById('pic_03').onclick = () => { alert('second') }; // first one lost!
+
+    // WAY 3 — addEventListener (BEST — always use this)
+    // can add MULTIPLE listeners on same element
+    // gives access to event object with all details
+    // can control bubbling/capturing
+    // can remove listener when needed
+
+
+
+    // ============================================================
+    // EVENT OBJECT — what is 'e' in addEventListener callback
+    // ============================================================
+
+    document.getElementById('pic_01').addEventListener('click', function(e){
+        console.log(e); 
+        // e = event object — contains ALL info about what happened
+        // PointerEvent {isTrusted: true, pointerId: 1, ...}
+
+        // IMPORTANT PROPERTIES OF EVENT OBJECT:
+        console.log(e.type);          // "click" — type of event
+        console.log(e.timeStamp);     // when event happened in ms
+        console.log(e.defaultPrevented); // true if preventDefault() was called
+        console.log(e.target);        // element that was ACTUALLY clicked
+        console.log(e.currentTarget); // element that HAS the listener attached
+        // NOTE: target and currentTarget differ in bubbling/capturing
+        // target = where click originated
+        // currentTarget = where listener is attached
+
+        console.log(e.toElement);     // element mouse moved TO (mouseover events)
+        console.log(e.srcElement);    // same as target — older browser property
+
+        // POSITION PROPERTIES:
+        console.log(e.clientX, e.clientY); // position relative to VIEWPORT (visible area)
+        console.log(e.screenX, e.screenY); // position relative to SCREEN (monitor)
+        // clientX/Y changes when you scroll — screenX/Y stays same
+
+        // KEYBOARD MODIFIER KEYS (true if held while clicking):
+        console.log(e.altKey);   // true if Alt was held
+        console.log(e.ctrlKey);  // true if Ctrl was held
+        console.log(e.shiftKey); // true if Shift was held
+        console.log(e.keyCode);  // numeric code of key pressed (keyboard events)
+    }, false)
+
+
+
+    // ============================================================
+    // EVENT PROPAGATION — bubbling vs capturing
+    // ============================================================
+
+    // When you click an element, the event doesnt just fire on that element
+    // It travels through the DOM tree in TWO phases:
+    //
+    // CAPTURING phase: window → document → body → ul → li → img (top to bottom)
+    // BUBBLING phase:  img → li → ul → body → document → window (bottom to top)
+    //
+    // addEventListener third parameter controls which phase:
+    // false (default) = BUBBLING  — inner to outer — most commonly used
+    // true            = CAPTURING — outer to inner
+
+
+
+    // ============================================================
+    // BUBBLING MODE (false — default)
+    // ============================================================
+
+    // Inner element listener
+    document.getElementById('pic_02').addEventListener('click', function(e){
+        console.log("pic 02 clicked"); // fires FIRST in bubbling
+    }, false)
+
+    // Outer element listener
+    document.getElementById('images').addEventListener('click', function(e){
+        console.log("clicked inside the ul"); // fires SECOND — event bubbles up
+    }, false)
+
+    // OUTPUT when pic_02 is clicked:
+    // 1. "pic 02 clicked"      ← inner fires first
+    // 2. "clicked inside the ul" ← then bubbles up to ul
+
+
+
+    // ============================================================
+    // CAPTURING MODE (true)
+    // ============================================================
+
+    // Outer element listener with capturing
+    document.getElementById('images').addEventListener('click', function(e){
+        console.log("ul capturing — fires first");
+    }, true) // true = capturing mode
+
+    // Inner element listener with capturing
+    document.getElementById('pic_03').addEventListener('click', function(e){
+        console.log("pic 03 clicked — fires second");
+    }, true)
+
+    // OUTPUT when pic_03 is clicked:
+    // 1. "ul capturing — fires first"   ← outer fires first in capturing
+    // 2. "pic 03 clicked — fires second" ← then inner fires
+
+
+
+    // ============================================================
+    // stopPropagation — stop event from travelling further
+    // ============================================================
+
+    // Without stopPropagation:
+    // click pic → fires pic listener → bubbles to ul → fires ul listener
+
+    // With stopPropagation:
+    // click pic → fires pic listener → STOPS — ul listener never fires
+
+    document.getElementById('pic_03').addEventListener('click', function(e){
+        console.log("pic 03 — stopping propagation here");
+        e.stopPropagation(); // event will NOT bubble up to ul or body
+        // ul's click listener will NOT fire when pic_03 is clicked
+    }, false)
+
+    // USE CASE: modal close button — dont want click to reach background
+
+
+
+    // ============================================================
+    // preventDefault — stop default browser behavior
+    // ============================================================
+
+    // Every HTML element has default behavior:
+    // <a href="..."> → navigates to URL
+    // <form>         → submits and reloads page
+    // <input type="checkbox"> → checks/unchecks
+    // right click    → shows context menu
+
+    // preventDefault() cancels that default behavior
+
+    document.getElementById('google').addEventListener('click', (e) => {
+        e.preventDefault();   // stops navigation to google.com
+        e.stopPropagation();  // stops bubbling to ul
+        console.log('google clicked but page NOT opened');
+        // page stays on current URL — link does nothing visually
+    }, false)
+
+    // COMMON USE CASES:
+    // e.preventDefault() on form submit → validate before sending
+    // e.preventDefault() on link → build single page app navigation
+    // e.preventDefault() on drag → custom drag behavior
+
+
+
+    // ============================================================
+    // EVENT DELEGATION — one listener handles multiple elements
+    // ============================================================
+
+    // Instead of adding listener to EACH image (5 listeners):
+    // document.getElementById('pic_01').addEventListener(...)
+    // document.getElementById('pic_02').addEventListener(...)
+    // document.getElementById('pic_03').addEventListener(...)
+    // document.getElementById('pic_04').addEventListener(...)
+
+    // Add ONE listener to PARENT (ul) and check what was clicked:
+    // Benefits:
+    // 1. less memory — one listener instead of many
+    // 2. works for dynamically added elements too
+    // 3. cleaner code
+
+    document.querySelector('#images').addEventListener('click', (e) => {
+        console.log(e.target.tagName); // IMG or A or LI etc
+
+        // check if clicked element is an image
+        if(e.target.tagName === "IMG"){
+            // e.target = the img element clicked
+            // e.target.parentNode = the li containing that img
+            let deleted = e.target.parentNode; // get parent li
+            deleted.remove(); // remove the entire li from DOM
+            // this removes both the img AND its li wrapper
+        }
+        // if clicked on google link or empty area — nothing happens
+    }, false)
+
+
+
+    // ============================================================
+    // QUICK REFERENCE — event object properties
+    // ============================================================
+
+    // TYPE AND TIMING:
+    // e.type             → "click", "keydown", "mouseover" etc
+    // e.timeStamp        → ms since page loaded when event fired
+    // e.defaultPrevented → true if preventDefault() was called
+
+    // TARGET:
+    // e.target           → element where click originated
+    // e.currentTarget    → element where listener is attached
+    // e.toElement        → element mouse moved to (mouseover)
+    // e.srcElement       → same as target (older browsers)
+
+    // POSITION:
+    // e.clientX/Y        → position relative to viewport
+    // e.screenX/Y        → position relative to physical screen
+
+    // KEYBOARD:
+    // e.altKey           → was Alt held? true/false
+    // e.ctrlKey          → was Ctrl held? true/false
+    // e.shiftKey         → was Shift held? true/false
+    // e.keyCode          → numeric key code (keyboard events only)
+
+
+
+    // ============================================================
+    // ALSO WORTH KNOWING — old ways (not used anymore)
+    // ============================================================
+
+    // attachEvent() — Internet Explorer only, deprecated
+    // element.attachEvent('onclick', handler) — dont use
+
+    // jQuery .on() — was popular before addEventListener was standardized
+    // $(element).on('click', handler) — dont use if vanilla JS works
+
+    // Both replaced by addEventListener — learn only addEventListener
+
+</script>
+</html>
+
+<!--
+NOTE — KEY TAKEAWAYS:
+
+1. ALWAYS use addEventListener — not inline onclick or .onclick property
+2. EVENT OBJECT (e) contains everything about what happened
+3. BUBBLING (false/default) — inner to outer — used 95% of the time
+4. CAPTURING (true) — outer to inner — rarely needed
+5. stopPropagation() — stops event travelling up/down DOM tree
+6. preventDefault() — stops default browser behavior (link, form submit etc)
+7. EVENT DELEGATION — one listener on parent, check e.target inside
+8. e.target vs e.currentTarget:
+   target        = where click actually happened
+   currentTarget = where listener is attached
+-->
