@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>setTimeout — Complete Guide</title>
+</head>
+<body>
+    <h1>chai aur code</h1>
+    <button id="stop">stop</button>
+</body>
+<script>
+
+    // ============================================================
+    // setTimeout — COMPLETE GUIDE WITH INTERVIEW QUESTIONS
+    // ============================================================
+    // syntax: setTimeout(callback, delayInMilliseconds, ...args)
+    // executes callback ONCE after specified delay
+    // returns a timer ID (number) used to cancel it
+    // 1000ms = 1 second
+    // ============================================================
+
+
+
+    // ============================================================
+    // BASICS
+    // ============================================================
+
+    // METHOD 1 — inline arrow function
+    setTimeout(() => {
+        console.log("javascript");
+    }, 10000);
+    // output: "javascript" after 10 seconds
+
+    // METHOD 2 — function reference (cleaner, reusable)
+    let fxn = function(){
+        console.log("vaibhaw");
+    }
+    setTimeout(fxn, 5000);
+    // pass reference NOT call — fxn not fxn()
+    // fxn()  → calls immediately — WRONG
+    // fxn    → schedules for later — CORRECT
+
+    // output order:
+    // 5 sec  → "vaibhaw"
+    // 10 sec → "javascript"
+
+    // METHOD 3 — passing arguments to callback
+    function greet(name, city){
+        console.log(`Hello ${name} from ${city}`);
+    }
+    setTimeout(greet, 3000, "Vaibhaw", "Delhi");
+    // third argument onwards = arguments passed to callback
+    // output after 3 sec: "Hello Vaibhaw from Delhi"
+
+
+
+    // ============================================================
+    // DOM MANIPULATION WITH setTimeout
+    // ============================================================
+
+    const changetext = () => {
+        document.querySelector('h1').innerHTML = "best js playlist";
+    };
+
+    // setTimeout returns timer ID — save it to cancel later
+    const changme = setTimeout(changetext, 5000);
+    // output: heading changes to "best js playlist" after 5 seconds
+
+    // clearTimeout — cancel before it runs
+    document.querySelector('#stop').addEventListener('click', () => {
+        clearTimeout(changme);
+        // if clicked before 5 sec → heading never changes
+        // if clicked after 5 sec  → too late, already executed
+        console.log("timeout stopped");
+    })
+
+
+
+    // ============================================================
+    // INTERVIEW QUESTION 1
+    // what is the output?
+    // ============================================================
+
+    console.log("start");
+
+    setTimeout(() => {
+        console.log("inside setTimeout");
+    }, 0); // delay = 0ms
+
+    console.log("end");
+
+    // OUTPUT:
+    // start
+    // end
+    // inside setTimeout
+
+    // WHY?
+    // setTimeout is ASYNCHRONOUS — goes to web API even with 0ms delay
+    // JS executes synchronous code first (start, end)
+    // then picks up setTimeout callback from callback queue
+    // 0ms means "run as soon as possible" NOT "run immediately"
+    // this is the EVENT LOOP concept
+
+
+
+    // ============================================================
+    // INTERVIEW QUESTION 2
+    // what is the output of this loop?
+    // ============================================================
+
+    // PROBLEM — classic interview trap
+    for(var i = 1; i <= 3; i++){
+        setTimeout(() => {
+            console.log(i); // what prints?
+        }, i * 1000);
+    }
+    // OUTPUT: 4  4  4  (NOT 1 2 3)
+    // WHY?
+    // var is function scoped — all 3 callbacks share SAME i
+    // by the time callbacks run, loop is done and i = 4
+    // all three print 4
+
+    // FIX 1 — use let instead of var (block scoped)
+    for(let j = 1; j <= 3; j++){
+        setTimeout(() => {
+            console.log(j); // 1  2  3 ✓
+        }, j * 1000);
+    }
+    // let creates NEW j for each iteration — each callback has own j
+
+    // FIX 2 — use IIFE to capture value (older approach)
+    for(var k = 1; k <= 3; k++){
+        (function(k){
+            setTimeout(() => {
+                console.log(k); // 1  2  3 ✓
+            }, k * 1000);
+        })(k);
+    }
+    // IIFE creates new scope for each iteration — captures current k
+
+
+
+    // ============================================================
+    // INTERVIEW QUESTION 3
+    // what is the output?
+    // ============================================================
+
+    setTimeout(() => {
+        console.log("A");
+    }, 1000);
+
+    setTimeout(() => {
+        console.log("B");
+    }, 500);
+
+    setTimeout(() => {
+        console.log("C");
+    }, 0);
+
+    // OUTPUT: C  B  A
+    // WHY? sorted by delay time — shortest delay runs first
+    // C(0ms) → B(500ms) → A(1000ms)
+
+
+
+    // ============================================================
+    // INTERVIEW QUESTION 4
+    // setTimeout inside setTimeout — nested
+    // ============================================================
+
+    setTimeout(() => {
+        console.log("outer — after 1 sec");
+
+        setTimeout(() => {
+            console.log("inner — after 2 sec total");
+            // delay is relative to when outer ran
+            // outer ran at 1 sec + inner delay 1 sec = 2 sec total
+        }, 1000);
+
+    }, 1000);
+
+    // OUTPUT:
+    // 1 sec → "outer — after 1 sec"
+    // 2 sec → "inner — after 2 sec total"
+
+    // USE CASE: chaining async operations in sequence
+    // better done with Promises or async/await in real code
+
+
+
+    // ============================================================
+    // INTERVIEW QUESTION 5
+    // can you cancel setTimeout after it has already executed?
+    // ============================================================
+
+    const timer = setTimeout(() => {
+        console.log("this will run");
+    }, 1000);
+
+    // try to cancel AFTER it runs
+    setTimeout(() => {
+        clearTimeout(timer);
+        // calling clearTimeout after execution — does NOTHING
+        // no error, no effect — silently ignored
+        console.log("tried to clear — but already executed");
+    }, 2000);
+
+    // ANSWER: NO — clearTimeout only works BEFORE execution
+    // once executed, it cannot be undone
+
+
+
+    // ============================================================
+    // INTERVIEW QUESTION 6
+    // is setTimeout delay guaranteed?
+    // ============================================================
+
+    console.log("before");
+
+    setTimeout(() => {
+        console.log("after 1000ms — or is it?");
+    }, 1000);
+
+    // simulate heavy synchronous work blocking JS thread
+    const start = Date.now();
+    while(Date.now() - start < 3000){} // block for 3 seconds
+
+    console.log("after blocking");
+
+    // OUTPUT:
+    // "before"
+    // "after blocking"    ← after 3 seconds
+    // "after 1000ms — or is it?" ← runs AFTER 3 seconds, NOT 1 second
+
+    // ANSWER: NO — setTimeout delay is MINIMUM not GUARANTEED
+    // if JS thread is busy, callback waits in queue
+    // heavy synchronous code delays setTimeout execution
+    // this is why long synchronous operations block the UI
+
+
+
+    // ============================================================
+    // INTERVIEW QUESTION 7
+    // what does setTimeout return?
+    // ============================================================
+
+    const id1 = setTimeout(() => {}, 1000);
+    const id2 = setTimeout(() => {}, 2000);
+    const id3 = setTimeout(() => {}, 3000);
+
+    console.log(id1); // 1 (or some number)
+    console.log(id2); // 2
+    console.log(id3); // 3
+
+    // ANSWER: setTimeout returns a positive integer (timer ID)
+    // IDs are assigned sequentially by the browser
+    // used with clearTimeout(id) to cancel specific timer
+    // IDs are unique per browser tab/window
+
+
+
+    // ============================================================
+    // INTERVIEW QUESTION 8
+    // what is the minimum delay value for setTimeout?
+    // ============================================================
+
+    setTimeout(() => {
+        console.log("minimum delay");
+    }, 0);
+
+    // ANSWER:
+    // spec says minimum is 4ms for nested timeouts (after 5 levels deep)
+    // setTimeout(fn, 0) has ~1ms minimum in modern browsers
+    // setTimeout(fn, -100) → treated as 0 (negative = 0)
+    // setTimeout(fn) → delay defaults to 0 if not provided
+
+
+
+    // ============================================================
+    // INTERVIEW QUESTION 9
+    // difference between setTimeout(fn, 0) and queueMicrotask()
+    // ============================================================
+
+    console.log("1 — sync");
+
+    setTimeout(() => {
+        console.log("3 — macrotask (setTimeout)");
+    }, 0);
+
+    queueMicrotask(() => {
+        console.log("2 — microtask");
+    });
+
+    console.log("4 — sync");
+
+    // OUTPUT:
+    // "1 — sync"
+    // "4 — sync"
+    // "2 — microtask"       ← microtasks run before macrotasks
+    // "3 — macrotask"       ← setTimeout is a macrotask
+
+    // ANSWER:
+    // setTimeout → macrotask queue → runs after all microtasks
+    // queueMicrotask → microtask queue → runs before macrotasks
+    // Promises(.then) are also microtasks
+    // order: sync code → microtasks → macrotasks(setTimeout)
+
+
+
+    // ============================================================
+    // INTERVIEW QUESTION 10
+    // implement a debounce function using setTimeout
+    // ============================================================
+
+    // PROBLEM: search input fires on every keystroke — too many API calls
+    // SOLUTION: debounce — wait for user to STOP typing before firing
+
+    function debounce(callback, delay){
+        let timer; // stores timer ID
+
+        return function(...args){
+            clearTimeout(timer); // cancel previous timer on every keystroke
+            timer = setTimeout(() => {
+                callback(...args); // only fires after user stops typing
+            }, delay);
+        }
+    }
+
+    // usage:
+    const search = debounce((query) => {
+        console.log(`searching for: ${query}`);
+        // API call goes here
+    }, 500);
+
+    // simulate typing
+    search("v");        // cancelled
+    search("va");       // cancelled
+    search("vai");      // cancelled
+    search("vaibhaw");  // fires after 500ms — only this one executes
+
+    // OUTPUT (after 500ms): "searching for: vaibhaw"
+    // REAL WORLD USE: search bars, resize handlers, form validation
+
+
+
+    // ============================================================
+    // INTERVIEW QUESTION 11
+    // implement setTimeout using setInterval
+    // ============================================================
+
+    function mySetTimeout(callback, delay){
+        const id = setInterval(() => {
+            callback();       // execute callback
+            clearInterval(id); // immediately clear to run only once
+        }, delay);
+        return id;
+    }
+
+    mySetTimeout(() => {
+        console.log("custom setTimeout using setInterval");
+    }, 2000);
+    // output after 2 sec: "custom setTimeout using setInterval"
+
+
+
+    // ============================================================
+    // INTERVIEW QUESTION 12
+    // this context inside setTimeout
+    // ============================================================
+
+    const obj = {
+        name: "Vaibhaw",
+
+        // regular function — loses 'this' inside setTimeout
+        greetRegular: function(){
+            setTimeout(function(){
+                console.log(this.name); // undefined — 'this' = window/global
+            }, 1000);
+        },
+
+        // arrow function — inherits 'this' from surrounding scope
+        greetArrow: function(){
+            setTimeout(() => {
+                console.log(this.name); // "Vaibhaw" — 'this' = obj ✓
+            }, 1000);
+        },
+
+        // bind — explicitly bind 'this'
+        greetBind: function(){
+            setTimeout(function(){
+                console.log(this.name); // "Vaibhaw" — bound correctly ✓
+            }.bind(this), 1000);
+        }
+    }
+
+    obj.greetRegular(); // undefined
+    obj.greetArrow();   // "Vaibhaw"
+    obj.greetBind();    // "Vaibhaw"
+
+    // ANSWER: use arrow function OR .bind(this) inside setTimeout
+    // regular function loses 'this' context inside setTimeout
+
+
+
+    // ============================================================
+    // SUMMARY — QUICK REFERENCE
+    // ============================================================
+
+    // setTimeout(fn, delay, ...args) → runs fn ONCE after delay
+    // clearTimeout(id)               → cancels before execution
+    // delay is MINIMUM not guaranteed
+    // returns numeric timer ID
+    // 0ms delay still runs after synchronous code (event loop)
+    // var in loop → all callbacks share same variable (use let)
+    // arrow function preserves 'this' context
+    // setTimeout = macrotask → runs after microtasks (Promises)
+
+</script>
+</html>
+
+<!--
+INTERVIEW CHEATSHEET — setTimeout
+
+Q1:  output of setTimeout with 0ms delay?
+A:   runs AFTER synchronous code — event loop
+
+Q2:  classic loop problem with var?
+A:   use let (block scope) or IIFE to capture value
+
+Q3:  multiple setTimeouts — which runs first?
+A:   shortest delay runs first
+
+Q4:  is delay guaranteed?
+A:   NO — minimum delay, JS thread must be free
+
+Q5:  what does setTimeout return?
+A:   positive integer timer ID
+
+Q6:  can you cancel after execution?
+A:   NO — clearTimeout only works before execution
+
+Q7:  setTimeout vs queueMicrotask?
+A:   microtasks run before macrotasks(setTimeout)
+
+Q8:  this inside setTimeout?
+A:   use arrow function or .bind(this)
+
+Q9:  what is debounce?
+A:   clearTimeout + setTimeout on every call — fires only after pause
+
+Q10: minimum delay?
+A:   ~1ms (0 treated as minimum, negative treated as 0)
+-->
