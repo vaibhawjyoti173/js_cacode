@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Profile Card</title>
+    <link rel="stylesheet" href="ApiRequest.css">
+</head>
+<body>
+    <div id="card">
+        <img id="img" src="https://picsum.photos/id/237/200/300" alt="random image">
+        <div class="card-content">
+            <h2 id="name">Loading Name...</h2>
+            <p id="bio">Loading Bio...</p>
+            <p id="followers">Followers: 0</p>
+            <!-- target="_blank" opens link in new tab rel="noopener noreferrer" is a security best practice -->
+            <!-- noopener: prevents new tab from accessing window.opener (prevents tab hijacking) -->
+            <!-- noreferrer: prevents sending referrer header to github (privacy) -->
+            <a id="profileLink" href="#" target="_blank" rel="noopener noreferrer">
+                <button>View Profile</button>
+            </a>
+        </div>
+    </div>
+</body>
+<script>
+
+    // ============================================================
+    // XHR (XMLHttpRequest) — COMPLETE GUIDE WITH INTERVIEW QUESTIONS
+    // ============================================================
+    // XMLHttpRequest is the ORIGINAL way to make HTTP requests in JS
+    // It is older than fetch() but still widely used and asked in interviews
+    // It works asynchronously — does NOT block the main thread
+    // ============================================================
+
+
+
+    // ============================================================
+    // STEP 1 — CREATE XHR OBJECT
+    // ============================================================
+
+    const requestUrl = 'https://api.github.com/users/vaibhawjyoti173';
+
+    // XMLHttpRequest is a built-in browser object — no import needed
+    const xhr = new XMLHttpRequest();
+    // xhr object has the following important PROPERTIES:
+    // xhr.readyState   — current state of request (0 to 4)
+    // xhr.status       — HTTP status code (200, 404, 500 etc)
+    // xhr.statusText   — HTTP status text ("OK", "Not Found" etc)
+    // xhr.responseText — response as string
+    // xhr.responseXML  — response as XML DOM (if response is XML)
+    // xhr.response     — response based on responseType
+
+
+
+    // ============================================================
+    // STEP 2 — OPEN THE REQUEST
+    // ============================================================
+
+    // xhr.open(method, url, async, username, password)
+    // method: HTTP method — GET, POST, PUT, DELETE, PATCH etc
+    // url: endpoint to hit
+    // async: true (default, non-blocking) or false (blocking — NEVER use false in production)
+    // username, password: optional for basic auth
+    xhr.open('GET', requestUrl);
+    // NOTE: open() does NOT send the request — it just configures it
+    // open() can be called multiple times to reuse same xhr object with different URLs
+
+
+
+    // ============================================================
+    // STEP 3 — UNDERSTANDING readyState
+    // ============================================================
+    // readyState goes through 5 stages (0 → 4):
+    // 0 = UNSENT      — xhr created, open() not called yet
+    // 1 = OPENED      — open() called, send() not called
+    // 2 = HEADERS_RECEIVED — send() called, response headers received
+    // 3 = LOADING     — downloading, responseText has partial data
+    // 4 = DONE        — operation complete (success OR failure)
+    // ============================================================
+
+    // onreadystatechange fires EVERY time readyState changes (0→1, 1→2, 2→3, 3→4)
+    // so we check readyState===4 to know when response is fully received
+    xhr.onreadystatechange = function(){
+
+        // readyState 4 means request is COMPLETE (not necessarily successful)
+        if(xhr.readyState === 4){
+
+            // ALWAYS check status code before using response
+            // 200 = OK (success)
+            // 201 = Created (POST success)
+            // 400 = Bad Request (wrong params)
+            // 401 = Unauthorized (no/invalid auth)
+            // 403 = Forbidden (no permission)
+            // 404 = Not Found
+            // 429 = Too Many Requests (rate limit hit — common with GitHub API)
+            // 500 = Internal Server Error
+            if(xhr.status === 200){
+
+                // responseText is always a STRING — must parse to use as object
+                // COMMON ERROR: forgetting JSON.parse and trying to use datas.name directly
+                // datas without parse would give "[object Object]" or undefined
+                const datas = JSON.parse(xhr.responseText);
+                // NOTE: using 'this.responseText' also works (this = xhr inside onreadystatechange)
+                // but 'xhr.responseText' is safer and more readable
+
+
+
+                // ============================================================
+                // INJECT DATA INTO DOM
+                // ============================================================
+
+                const profileImg      = document.getElementById('img');
+                const profileName     = document.getElementById('name');
+                const profileBio      = document.getElementById('bio');
+                const profileFollowers= document.getElementById('followers');
+                const profileLink     = document.getElementById('profileLink');
+
+                // datas.avatar_url → profile picture URL from GitHub API
+                profileImg.src = datas.avatar_url;
+                // datas.name → display name (can be null if user hasn't set it)
+                // datas.login → GitHub username (always exists)
+                // || (OR operator) gives fallback if first value is null/undefined/empty
+                profileImg.alt = datas.name || datas.login;
+
+                profileName.textContent = datas.name || datas.login;
+                // COMMON ERROR: using innerHTML instead of textContent for user-provided data
+                // innerHTML: parses as HTML → XSS vulnerability if data contains <script>
+                // textContent: treats as plain text → safe ✓ always prefer for user data
+
+                profileBio.textContent  = datas.bio || "No bio available";
+                profileFollowers.textContent = `Followers: ${datas.followers}`;
+
+                // datas.html_url → direct URL to GitHub profile
+                profileLink.href = datas.html_url;
+
+                // COMMON ERROR: accessing datas.followers without checking if it exists
+                // Always use fallback: datas.followers ?? 0
+                // ?? (nullish coalescing) only falls back for null/undefined (not 0)
+                // || would treat 0 followers as falsy and show default — wrong!
+                profileFollowers.textContent = `Followers: ${datas.followers ?? 0}`;
+
+            } else {
+                // Handle HTTP errors
+                console.error(`Request failed: ${xhr.status} ${xhr.statusText}`);
+                document.getElementById('name').textContent = "Failed to load profile";
+                document.getElementById('bio').textContent  = `Error: ${xhr.status}`;
+            }
+        }
+    }
+
+
+
+    // ============================================================
+    // STEP 4 — ERROR HANDLING
+    // ============================================================
+
+    // onerror fires for NETWORK errors (no internet, DNS failure, CORS block)
+    // It does NOT fire for HTTP errors like 404 or 500 — those come through onreadystatechange
+    xhr.onerror = function(){
+        console.error("Network error — check internet connection or CORS policy");
+        document.getElementById('name').textContent = "Network Error";
+        document.getElementById('bio').textContent  = "Could not connect to API";
+    }
+
+    // ontimeout fires if request takes longer than timeout value
+    xhr.timeout = 5000; // 5 seconds timeout
+    xhr.ontimeout = function(){
+        console.error("Request timed out after 5 seconds");
+        document.getElementById('name').textContent = "Request Timed Out";
+    }
+
+    // onprogress fires while response is being received (readyState=3)
+    // Useful for showing download progress for large files
+    xhr.onprogress = function(event){
+        if(event.lengthComputable){
+            const percent = (event.loaded / event.total) * 100;
+            console.log(`Loading: ${percent.toFixed(1)}%`);
+        }
+    }
+
+    // onload fires when readyState=4 AND status is in 200-299 range
+    // Cleaner alternative to checking readyState===4 inside onreadystatechange
+    // xhr.onload = function(){ ... } ← same as readyState===4 check but cleaner
+
+
+
+    // ============================================================
+    // STEP 5 — SEND THE REQUEST
+    // ============================================================
+
+    // send() actually sends the request
+    // For GET: send() or send(null) — no body needed
+    // For POST: send(JSON.stringify(data)) — body goes here
+    xhr.send();
+    // COMMON ERROR: forgetting xhr.send() — the most common mistake!
+    // open() alone does nothing — send() actually fires the request
+
+
+
+    // ============================================================
+    // SETTING REQUEST HEADERS — important for POST/auth
+    // ============================================================
+    // Must be set AFTER open() and BEFORE send()
+    // xhr.setRequestHeader('Content-Type', 'application/json');
+    // xhr.setRequestHeader('Authorization', 'Bearer YOUR_TOKEN');
+    // For GitHub API authenticated requests (higher rate limit):
+    // xhr.setRequestHeader('Authorization', 'token YOUR_PERSONAL_ACCESS_TOKEN');
+    // COMMON ERROR: calling setRequestHeader before open() → InvalidStateError
+
+
+
+    // ============================================================
+    // SENDING POST REQUEST — example for reference
+    // ============================================================
+    // const postXhr = new XMLHttpRequest();
+    // postXhr.open('POST', 'https://api.example.com/data');
+    // postXhr.setRequestHeader('Content-Type', 'application/json');
+    // postXhr.onreadystatechange = function(){
+    //     if(this.readyState===4 && this.status===201){
+    //         console.log("Created:", JSON.parse(this.responseText));
+    //     }
+    // }
+    // postXhr.send(JSON.stringify({ name: "Vaibhaw", age: 22 }));
+    // COMMON ERROR: sending object directly without JSON.stringify
+    // xhr.send({ name: "Vaibhaw" }) → sends "[object Object]" as string ✗
+    // xhr.send(JSON.stringify({ name: "Vaibhaw" })) → sends proper JSON ✓
+
+
+
+    // ============================================================
+    // COMMON XHR ERRORS — QUICK REFERENCE
+    // ============================================================
+    // 1. Forgetting xhr.send() → request never fires
+    // 2. Not checking readyState===4 → code runs 4 times (states 1,2,3,4)
+    // 3. Not checking xhr.status===200 → uses error response as valid data
+    // 4. Forgetting JSON.parse → treating string as object → undefined properties
+    // 5. Using innerHTML instead of textContent → XSS vulnerability
+    // 6. Calling setRequestHeader before open() → InvalidStateError thrown
+    // 7. Sending object without JSON.stringify in POST → "[object Object]" sent
+    // 8. Using async=false in open() → blocks entire browser UI thread
+    // 9. Not handling onerror → silent failure on network errors
+    // 10. Race condition: accessing DOM before XHR completes → undefined values
+
+
+
+    // ============================================================
+    // XHR vs FETCH — INTERVIEW COMPARISON
+    // ============================================================
+    // XHR:
+    //   - Older API (ES5), works in all browsers including IE
+    //   - Event-based (onreadystatechange, onload, onerror)
+    //   - Supports upload progress via onprogress
+    //   - Can be aborted via xhr.abort()
+    //   - More verbose code
+    //
+    // Fetch:
+    //   - Newer API (ES6+), Promise-based
+    //   - Cleaner syntax, works with async/await
+    //   - Does NOT reject on HTTP errors (404, 500) — must check response.ok
+    //   - No native upload progress support
+    //   - Can be aborted via AbortController
+    //   - Not supported in older IE
+    //
+    // Same GitHub call with fetch (for comparison):
+    // fetch('https://api.github.com/users/vaibhawjyoti173')
+    //   .then(res => { if(!res.ok) throw new Error(res.status); return res.json(); })
+    //   .then(data => { console.log(data.name); })
+    //   .catch(err => console.error(err));
+
+
+
+    // ============================================================
+    // CORS — CROSS ORIGIN RESOURCE SHARING (very common interview topic)
+    // ============================================================
+    // CORS error happens when: your page on domain A requests data from domain B
+    // and domain B's server doesn't allow it via Access-Control-Allow-Origin header
+    //
+    // GitHub API allows CORS for public endpoints — that's why this works
+    // Private APIs may block CORS — in that case use a backend proxy
+    //
+    // CORS is enforced by the BROWSER — not the server
+    // Server-to-server requests have NO CORS restrictions
+    //
+    // Fix CORS on your own server: add header:
+    // Access-Control-Allow-Origin: * (allow all) or specific domain
+
+
+
+    // ============================================================
+    // ABORTING A REQUEST
+    // ============================================================
+    // xhr.abort() — cancels the request
+    // Use case: user navigates away, or a new search query replaces old one
+    // After abort(), readyState becomes 0 (UNSENT)
+    // const btn = document.querySelector('button');
+    // btn.addEventListener('click', () => xhr.abort());
+
+
+
+    // ============================================================
+    // INTERVIEW QUESTIONS — QUICK ANSWERS
+    // ============================================================
+    // Q: What is XHR?
+    // A: Browser API to make HTTP requests without page reload (AJAX)
+
+    // Q: What are the 5 readyState values?
+    // A: 0=UNSENT, 1=OPENED, 2=HEADERS_RECEIVED, 3=LOADING, 4=DONE
+
+    // Q: Difference between readyState 3 and 4?
+    // A: 3=partial data still downloading, 4=complete (success or fail)
+
+    // Q: How to handle errors in XHR?
+    // A: Check status in onreadystatechange AND use onerror for network errors
+
+    // Q: Why use JSON.parse on responseText?
+    // A: responseText is always a string — parse converts it to usable JS object
+
+    // Q: Difference between onerror and status 404?
+    // A: onerror = network-level failure (no internet, CORS). 404 = server responded but resource not found
+
+    // Q: How to send POST data with XHR?
+    // A: xhr.setRequestHeader('Content-Type','application/json'); xhr.send(JSON.stringify(data));
+
+    // Q: What is AJAX?
+    // A: Asynchronous JavaScript And XML — technique to fetch data without page reload
+    //    XHR and fetch are both implementations of AJAX
+
+    // Q: How to abort an XHR request?
+    // A: xhr.abort() — triggers onabort event, sets readyState to 0
+
+    // Q: What is CORS and why does it matter?
+    // A: Browser security policy preventing cross-origin requests unless server allows it
+
+    // Q: Is XHR synchronous or asynchronous?
+    // A: Asynchronous by default (3rd param of open() = true). Never use sync (false) in production
+
+    // Q: XHR vs Fetch?
+    // A: XHR is event-based, older, supports progress. Fetch is Promise-based, cleaner, modern
+
+
+    // ============================================================
+    // console.log — WHAT IT IS & HOW IT WORKS INTERNALLY
+    // ============================================================
+    // console.log is NOT part of the ECMAScript (JS) specification
+    // It is provided by the HOST ENVIRONMENT (browser or Node.js)
+    // This means JS itself doesn't define it — the runtime does
+    //
+    // In BROWSERS:
+    //   console.log → calls into the browser's C++ DevTools binding
+    //   → DevTools protocol renders output in the console UI
+    //
+    // In NODE.JS:
+    //   console.log → process.stdout.write() → libuv → uv_write()
+    //   → writes to OS stdout (C++ level)
+    //
+    // KEY POINT: Every console.log call crosses the JS ↔ C++ boundary
+    // via V8's C++ API bindings
+    // ============================================================
+
+
+
+    // ============================================================
+    // V8 ENGINE — HOW JAVASCRIPT ACTUALLY RUNS
+    // ============================================================
+    // V8 is Google's open-source JS engine, written in C++
+    // Used in: Chrome browser AND Node.js
+    // It converts JS → machine code (not interpreted line by line)
+    //
+    // PIPELINE:
+    //   JS Source Code
+    //        ↓
+    //   Parser → AST (Abstract Syntax Tree)
+    //        ↓
+    //   Ignition (Interpreter) → Bytecode
+    //        ↓
+    //   TurboFan (JIT Compiler) → Optimized Machine Code
+    //
+    // Parser      — reads your JS and builds an AST
+    // Ignition    — V8's interpreter, converts AST to bytecode and runs it
+    // TurboFan    — JIT compiler, hot functions get compiled to native machine code
+    // Orinoco     — V8's garbage collector, manages memory (generational GC)
+    //
+    // JIT (Just-In-Time): code is compiled AT RUNTIME, not before
+    // This is why JS performance improved dramatically over the years
+    // ============================================================
+
+
+
+    // ============================================================
+    // JS INTERNAL ARCHITECTURE — KEY COMPONENTS
+    // ============================================================
+    //
+    //  ┌─────────────────────────────────────────┐
+    //  │           YOUR JS CODE                  │
+    //  ├─────────────────────────────────────────┤
+    //  │   V8 Engine (C++)                       │
+    //  │   ├── Call Stack (execution context)    │
+    //  │   ├── Heap (memory allocation)          │
+    //  │   └── Garbage Collector (Orinoco)       │
+    //  ├─────────────────────────────────────────┤
+    //  │   Web APIs / Node APIs (C++ bindings)   │
+    //  │   (console, setTimeout, fetch, XHR...)  │
+    //  ├─────────────────────────────────────────┤
+    //  │   Event Loop + Callback/Task Queue      │
+    //  │   (libuv in Node.js)                    │
+    //  └─────────────────────────────────────────┘
+    //
+    // Call Stack  — where functions are pushed/popped during execution
+    // Heap        — where objects/variables are stored in memory
+    // Event Loop  — picks callbacks from queue when call stack is empty
+    // libuv       — C library in Node.js handling async I/O (XHR, file, timers)
+    // ============================================================
+
+
+
+    // ============================================================
+    // WHY THIS MATTERS FOR XHR (connection to this file)
+    // ============================================================
+    // XHR is a Web API — not part of V8/JS engine itself
+    // When you call xhr.send():
+    //   1. JS hands off the request to the browser's C++ networking layer
+    //   2. JS call stack is FREE (non-blocking) — other code can run
+    //   3. When response arrives → callback pushed to Task Queue
+    //   4. Event Loop picks it up → onreadystatechange fires in JS
+    //
+    // This is exactly why XHR is ASYNCHRONOUS by default
+    // The C++ layer does the heavy lifting; JS just handles the callback
+    // ============================================================
+
+</script>
+</html>

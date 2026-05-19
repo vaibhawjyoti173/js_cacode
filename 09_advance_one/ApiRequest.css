@@ -1,0 +1,68 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box; /* Prevents padding from breaking widths */
+}
+
+body {
+    background-color: #2c3e50; /* A slightly cleaner dark gray */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Centers your card perfectly on screen */
+}
+
+#card {
+    width: 300px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    font-family: sans-serif;
+}
+
+#img {
+    display: block;
+    width: 100%; /* FIXED: Added % unit so image fits container */
+    height: 250px;
+    object-fit: cover; /* Prevents profile image from stretching stretch */
+}
+
+/* Added formatting for text spacing */
+.card-content {
+    padding: 20px;
+}
+
+#name {
+    font-size: 1.4rem;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+#bio {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 12px;
+}
+
+#followers {
+    font-weight: bold;
+    font-size: 0.95rem;
+    color: #007bff;
+    margin-bottom: 15px;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
