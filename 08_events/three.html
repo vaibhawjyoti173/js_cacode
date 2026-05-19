@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>chai aur javascript</h1>
+    <button id="start" style="color: aliceblue; background-color: black;">start</button>
+    <button id="stop" style="color: aqua; background-color: black;">stop</button>
+</body>
+<script>
+
+    // ============================================================
+    // setInterval — BASICS
+    // ============================================================
+
+    // prints "vaibhaw" + timestamp every 1 second
+    const saydate = function(){
+        console.log("vaibhaw", Date.now());
+    }
+    setInterval(saydate, 1000);
+
+    // passing arguments to setInterval callback
+    const saydated = function(str){
+        console.log(str, Date.now());
+    }
+    const interval_id = setInterval(saydated, 2000, "hello");
+    // output pattern: vaibhaw → vaibhaw → hello → vaibhaw → vaibhaw → hello
+
+    // stop immediately for demo
+    clearInterval(interval_id);
+    // clearInterval(id) permanently stops the interval
+
+
+
+    // ============================================================
+    // START / STOP with buttons
+    // ============================================================
+
+    let event_id = null; // null = no interval running
+
+    function startprint(){
+        if(event_id) return; // already running — prevent stacking
+
+        console.log("printing started");
+
+        // CORRECT — callback wrapped in arrow function
+        // arrow function passed as REFERENCE — executes every 1 sec
+        event_id = setInterval(() => {
+            console.log("event started", Date.now());
+        }, 1000);
+
+        // WRONG WAY — DO NOT DO THIS:
+        // setInterval(console.log("event started", Date.now()), 1000)
+        // console.log() is CALLED immediately — returns undefined
+        // setInterval(undefined, 1000) — nothing repeats!
+        // same trap as setTimeout(fxn(), 1000) — () means call not reference
+    }
+
+    function stopprint(){
+        clearInterval(event_id); // stop interval using saved ID
+        event_id = null;         // reset so start works again
+        console.log("printing stopped");
+    }
+
+    // EVENT DELEGATION — one listener on body handles both buttons
+    document.querySelector("body").addEventListener('click', (e) => {
+        if(e.target.id === "start")
+            startprint();
+        else if(e.target.id === "stop")
+            stopprint();
+    });
+
+</script>
+</html>
